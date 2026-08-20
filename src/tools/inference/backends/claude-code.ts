@@ -92,8 +92,13 @@ export class ClaudeCodeBackend implements InferenceBackend {
       model,
       "--allowedTools",
       "",
-      "--hookTimeout",
-      "1",
+      // Local patch (2026-08-13): Claude Code 2.1.231 removed `--hookTimeout`,
+      // so upstream 0.15.0 exits 1 here (not fixed on origin/main — verified
+      // same commit). `--bare` carries the same intent but SKIPS THE CONFIG
+      // LOAD THAT CARRIES AUTH — measured: `-p --bare` returns "Not logged in"
+      // while bare `-p` and `-p --allowedTools ""` both succeed. So the flag is
+      // dropped entirely: the subprocess runs with hooks, which costs a little
+      // startup and is the only variant that actually authenticates.
     ], {
       stdin: promptStream(prompt),
       stdout: "pipe",
